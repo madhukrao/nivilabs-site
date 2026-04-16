@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nivi Labs — Intelligent Document & Sensor Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #080C10;
+      --white: #F5F7FA;
+      --accent: #00E5FF;
+      --accent2: #7C3AED;
+      --mid: #141B24;
+      --border: rgba(255,255,255,0.08);
+      --text-muted: rgba(245,247,250,0.45);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    /* ── GLOW ORBS ── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(0,229,255,0.12) 0%, transparent 70%);
+      top: -200px; left: -150px;
+      animation: drift1 18s ease-in-out infinite alternate;
+    }
+    .orb-2 {
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(124,58,237,0.14) 0%, transparent 70%);
+      bottom: -100px; right: -100px;
+      animation: drift2 22s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { from { transform: translate(0,0); } to { transform: translate(80px, 60px); } }
+    @keyframes drift2 { from { transform: translate(0,0); } to { transform: translate(-60px, -80px); } }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 3rem;
+      background: rgba(8,12,16,0.7);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .logo-dot {
+      width: 8px; height: 8px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: inline-block;
+      box-shadow: 0 0 12px var(--accent);
+      animation: pulse-dot 2.5s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.7); }
+    }
+
+    nav ul {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      transition: color 0.2s;
+    }
+    nav a:hover { color: var(--white); }
+
+    .nav-cta {
+      background: transparent;
+      border: 1px solid rgba(0,229,255,0.4);
+      color: var(--accent) !important;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      font-size: 0.875rem !important;
+      transition: all 0.2s !important;
+    }
+    .nav-cta:hover {
+      background: rgba(0,229,255,0.08) !important;
+      border-color: var(--accent) !important;
+      color: var(--accent) !important;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 8rem 2rem 5rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(0,229,255,0.08);
+      border: 1px solid rgba(0,229,255,0.2);
+      border-radius: 100px;
+      padding: 0.35rem 1rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease both;
+    }
+    .badge-dot {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent);
+    }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3rem, 7vw, 6rem);
+      line-height: 1.0;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.8s 0.1s ease both;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, var(--accent) 0%, #A78BFA 50%, var(--accent) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s linear infinite;
+    }
+    @keyframes shimmer { to { background-position: 200% center; } }
+
+    .hero-sub {
+      max-width: 580px;
+      font-size: 1.15rem;
+      line-height: 1.7;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      animation: fadeUp 0.8s 0.3s ease both;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--black);
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 0 30px rgba(0,229,255,0.25);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 50px rgba(0,229,255,0.4);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--white);
+      padding: 0.85rem 2rem;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 400;
+      font-size: 0.95rem;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover {
+      border-color: rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.04);
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── DIVIDER LINE ── */
+    .divider {
+      position: relative;
+      z-index: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), var(--accent), var(--border), transparent);
+      margin: 0 auto;
+      max-width: 800px;
+      width: 90%;
+    }
+
+    /* ── PLATFORM SECTION ── */
+    section {
+      position: relative;
+      z-index: 1;
+      padding: 6rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      font-weight: 500;
+    }
+
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 1.25rem;
+    }
+
+    .section-sub {
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.7;
+      max-width: 540px;
+      margin-bottom: 3.5rem;
+    }
+
+    /* ── PRODUCT CARDS ── */
+    .product-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .product-card {
+      background: var(--mid);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .product-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(0,229,255,0.04) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .product-card:hover { border-color: rgba(0,229,255,0.25); transform: translateY(-4px); }
+    .product-card:hover::before { opacity: 1; }
+
+    .product-card.hw::before {
+      background: linear-gradient(135deg, rgba(124,58,237,0.06) 0%, transparent 60%);
+    }
+    .product-card.hw:hover { border-color: rgba(124,58,237,0.3); }
+
+    .card-icon {
+      width: 48px; height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-icon.sw { background: rgba(0,229,255,0.1); }
+    .card-icon.hw { background: rgba(124,58,237,0.1); }
+
+    .card-tag {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+      font-weight: 500;
+      display: inline-block;
+      margin-bottom: 1rem;
+    }
+    .tag-sw { background: rgba(0,229,255,0.1); color: var(--accent); }
+    .tag-hw { background: rgba(124,58,237,0.1); color: #A78BFA; }
+
+    .card-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.3rem;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.01em;
+    }
+
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.65;
+    }
+
+    /* ── WORKFLOWS ── */
+    .workflow-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .workflow-item {
+      background: var(--mid);
+      padding: 1.75rem 2rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 1.5rem;
+      transition: background 0.2s;
+    }
+    .workflow-item:hover { background: rgba(20,27,36,0.9); }
+    .workflow-item:first-child { border-radius: 16px 16px 0 0; }
+    .workflow-item:last-child { border-radius: 0 0 16px 16px; }
+
+    .wf-num {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 0.75rem;
+      color: var(--accent);
+      background: rgba(0,229,255,0.08);
+      border: 1px solid rgba(0,229,255,0.15);
+      border-radius: 6px;
+      padding: 0.3rem 0.6rem;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    .wf-content h3 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.35rem;
+      letter-spacing: -0.01em;
+    }
+
+    .wf-content p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+
+    .wf-arrow {
+      color: var(--accent);
+      font-size: 0.85rem;
+      opacity: 0.6;
+      white-space: nowrap;
+      margin-top: 2px;
+    }
+
+    /* ── STACK ── */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .stack-item {
+      background: var(--mid);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    .stack-item:hover {
+      border-color: rgba(0,229,255,0.2);
+      transform: translateY(-2px);
+    }
+    .stack-item .si-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .stack-item .si-name {
+      font-size: 0.78rem;
+      font-weight: 500;
+      color: var(--white);
+      margin-bottom: 0.2rem;
+    }
+    .stack-item .si-type {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* ── CTA ── */
+    .cta-section {
+      text-align: center;
+      padding: 6rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .cta-box {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--mid);
+      border: 1px solid rgba(0,229,255,0.15);
+      border-radius: 24px;
+      padding: 4rem 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 50%;
+      transform: translateX(-50%);
+      width: 200px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+
+    .cta-box h2 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 2.2rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+
+    .cta-box p {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+      line-height: 1.7;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 3rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .footer-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+    }
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.85rem;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--white); }
+
+    .footer-copy {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      nav ul { display: none; }
+      .product-grid { grid-template-columns: 1fr; }
+      .stack-grid { grid-template-columns: repeat(2, 1fr); }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+      h1 { font-size: 2.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">
+      <span class="logo-dot"></span>
+      Nivi Labs
+    </div>
+    <ul>
+      <li><a href="#platform">Platform</a></li>
+      <li><a href="#workflows">Workflows</a></li>
+      <li><a href="#stack">Technology</a></li>
+      <li><a href="mailto:kmr@nivilabs.ai" class="nav-cta">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      Intelligent Platform · Austin, TX
+    </div>
+    <h1>
+      Documents.<br>
+      <span class="gradient-text">Reimagined.</span>
+    </h1>
+    <p class="hero-sub">
+      Nivi Labs builds AI-powered platforms that extract intelligence from documents and deliver it where it matters — in your calendar, your books, and your body.
+    </p>
+    <div class="hero-actions">
+      <a href="mailto:kmr@nivilabs.ai" class="btn-primary">Get Early Access</a>
+      <a href="#platform" class="btn-secondary">Learn More →</a>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PLATFORM -->
+  <section id="platform">
+    <div class="section-label">Our Platform</div>
+    <h2 class="section-title">Two product lines.<br>One intelligent platform.</h2>
+    <p class="section-sub">Nivi Labs builds at the intersection of AI software and intelligent hardware — connected by a shared cloud backbone on Microsoft Azure.</p>
+
+    <div class="product-grid">
+      <div class="product-card">
+        <div class="card-icon sw">🧠</div>
+        <span class="card-tag tag-sw">Software</span>
+        <div class="card-title">Nivi IDP</div>
+        <p class="card-desc">Intelligent Document Processing platform. OCR any PDF or scanned document and automatically route extracted data into workflows — calendar exports, bookkeeping, medical billing, and more. Multi-tenant, white-label, Azure-native.</p>
+      </div>
+      <div class="product-card hw">
+        <div class="card-icon hw">⌚</div>
+        <span class="card-tag tag-hw">Hardware</span>
+        <div class="card-title">Nivi Wearable</div>
+        <p class="card-desc">A compact wearable sensor ecosystem in a watch form-factor. Intelligent feedback delivered directly to the user. Hardware and software design complete — launching in partnership with select collaborators.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- WORKFLOWS -->
+  <section id="workflows">
+    <div class="section-label">AI Workflows</div>
+    <h2 class="section-title">Extract once.<br>Automate everywhere.</h2>
+    <p class="section-sub">Each workflow is a dedicated AI agent running on Azure Container Apps — processing documents and delivering structured data downstream.</p>
+
+    <div class="workflow-list">
+      <div class="workflow-item">
+        <span class="wf-num">WF-1</span>
+        <div class="wf-content">
+          <h3>Calendar Table Extraction</h3>
+          <p>Scan school calendars, church schedules, religious calendars, or community event flyers — and export structured events directly to Google Calendar or Outlook with daily reminders.</p>
+        </div>
+        <span class="wf-arrow">→ Calendar</span>
+      </div>
+      <div class="workflow-item">
+        <span class="wf-num">WF-2</span>
+        <div class="wf-content">
+          <h3>Finance Document Processing</h3>
+          <p>Parse bank statements, invoices, and receipts. Automatically categorize and export transaction data for bookkeeping workflows.</p>
+        </div>
+        <span class="wf-arrow">→ Bookkeeping</span>
+      </div>
+      <div class="workflow-item">
+        <span class="wf-num">WF-3</span>
+        <div class="wf-content">
+          <h3>Medical Document Processing</h3>
+          <p>Extract structured data from medical bills, insurance EOBs, and clinical documents to support medical billing and patient record workflows.</p>
+        </div>
+        <span class="wf-arrow">→ Medical Billing</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <!-- STACK -->
+  <section id="stack">
+    <div class="section-label">Technology</div>
+    <h2 class="section-title">Built on Azure.<br>Designed to scale.</h2>
+    <p class="section-sub">Nivi Labs is Azure-native from day one — with a production backend, mobile apps on iOS and Android, and enterprise-grade security.</p>
+
+    <div class="stack-grid">
+      <div class="stack-item">
+        <div class="si-icon">☁️</div>
+        <div class="si-name">Azure Container Apps</div>
+        <div class="si-type">Agentic Microservices</div>
+      </div>
+      <div class="stack-item">
+        <div class="si-icon">🔐</div>
+        <div class="si-name">Azure Key Vault</div>
+        <div class="si-type">BYOK Encryption</div>
+      </div>
+      <div class="stack-item">
+        <div class="si-icon">📱</div>
+        <div class="si-name">Flutter</div>
+        <div class="si-type">iOS + Android</div>
+      </div>
+      <div class="stack-item">
+        <div class="si-icon">🤖</div>
+        <div class="si-name">Gemini + Claude AI</div>
+        <div class="si-type">OCR + LLM Pipeline</div>
+      </div>
+      <div class="stack-item">
+        <div class="si-icon">🔥</div>
+        <div class="si-name">Firebase</div>
+        <div class="si-type">Auth + Firestore</div>
+      </div>
+      <div class="stack-item">
+        <div class="si-icon">📅</div>
+        <div class="si-name">Google Calendar</div>
+        <div class="si-type">OAuth Integration</div>
+      </div>
+      <div class="stack-item">
+        <div class="si-icon">⚡</div>
+        <div class="si-name">FastAPI</div>
+        <div class="si-type">Backend API</div>
+      </div>
+      <div class="stack-item">
+        <div class="si-icon">🛡️</div>
+        <div class="si-name">Managed Identity</div>
+        <div class="si-type">Zero-trust Security</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-section">
+    <div class="cta-box">
+      <h2>Ready to automate<br>your documents?</h2>
+      <p>Nivi Labs is currently in early access. Reach out to join our beta program for schools, churches, healthcare organizations, and businesses.</p>
+      <a href="mailto:kmr@nivilabs.ai" class="btn-primary">Contact Us → kmr@nivilabs.ai</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">
+      <span class="logo-dot"></span>
+      Nivi Labs
+    </div>
+    <div class="footer-links">
+      <a href="#platform">Platform</a>
+      <a href="#workflows">Workflows</a>
+      <a href="#stack">Technology</a>
+      <a href="mailto:kmr@nivilabs.ai">Contact</a>
+    </div>
+    <div class="footer-copy">© 2026 Nivi Labs · Austin, TX</div>
+  </footer>
+
+</body>
+</html>
